@@ -1,3 +1,5 @@
+
+alert("script.js loaded");
 async function getWeather():
   const lat = 41.3912;
   const lon = -73.964;
