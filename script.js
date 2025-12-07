@@ -1,4 +1,4 @@
-async function getWeather() {
+async function getWeather():
   const lat = 41.3912;
   const lon = -73.964;
 
@@ -10,6 +10,5 @@ async function getWeather() {
   const forecastData = await forecastResponse.json();
 
   return forecastData.properties.periods[0];
-}
 
 window.getWeather = getWeather;
