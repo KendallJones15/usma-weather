@@ -1,38 +1,34 @@
-alert("script.js loaded successfully ✅");
 
-async function getWeather() {
-  const lat = 41.3912;console.log("script.js loaded ✅");
+alert("script.js loaded successfully ✅");
+console.log("script.js loaded ✅");
 
 async function getWeather() {
   const lat = 41.3912;
   const lon = -73.964;
 
-  const pointResponse = await fetch(`https://api.weather.gov/points/${lat},${lon}`);
+  // National Weather Service API
+  const pointResponse = await fetch(`https://api.weather.gov/points/${lat},${lon}`, {
+    headers: {
+      // NWS requests a descriptive User-Agent header
+      "User-Agent": "USMA Weather Demo (your-email@example.com)"
+    }
+  });
   const pointData = await pointResponse.json();
 
   const forecastUrl = pointData.properties.forecast;
-  const forecastResponse = await fetch(forecastUrl);
+  const forecastResponse = await fetch(forecastUrl, {
+    headers: {
+      "User-Agent": "USMA Weather Demo (your-email@example.com)"
+    }
+  });
   const forecastData = await forecastResponse.json();
 
+  // Return the first period (usually "Today" or "Tonight")
   return forecastData.properties.periods[0];
 }
 
-// Expose function globally
+// Expose function globally so you can call it from DevTools
 window.getWeather = getWeather;
 
-// optional: auto-run to test
-getWeather().then(weather => console.log(weather));
-
-  const lon = -73.964;
-
-  const pointResponse = await fetch(`https://api.weather.gov/points/${lat},${lon}`);
-  const pointData = await pointResponse.json();
-
-  const forecastUrl = pointData.properties.forecast;
-  const forecastResponse = await fetch(forecastUrl);
-  const forecastData = await forecastResponse.json();
-
-  return forecastData.properties.periods[0];
-}
-
-window.getWeather = getWeather;
+// Optional: auto-run once
+getWeather().then(weather => console.log("Forecast:", weather)).catch(err => console.error(err));
