@@ -160,11 +160,27 @@
       return forecastData.properties.periods[0];
     }
 
+    function isDaylightSavingTime() {
+      const now = new Date();
+      const year = now.getFullYear();
+      
+      // DST starts: 2nd Sunday in March at 2:00 AM
+      const marchFirst = new Date(year, 2, 1);
+      const dstStart = new Date(year, 2, (14 - marchFirst.getDay()) % 7 + 8, 2);
+      
+      // DST ends: 1st Sunday in November at 2:00 AM
+      const novemberFirst = new Date(year, 10, 1);
+      const dstEnd = new Date(year, 10, (7 - novemberFirst.getDay()) % 7 + 1, 2);
+      
+      return now >= dstStart && now < dstEnd;
+    }
+
     function determineUniform(temperature, shortForecast) {
       const uniform = {
         items: [],
         tempRange: '',
-        hasPrecipitation: false
+        hasPrecipitation: false,
+        isDST: isDaylightSavingTime()
       };
 
       // Check for precipitation
@@ -173,18 +189,21 @@
         shortForecast.toLowerCase().includes(keyword)
       );
 
+      // Determine shirt type based on DST
+      const shortSleeveShirt = uniform.isDST ? 'S/S Shirt' : 'L/S Shirt';
+
       // Determine temperature range and uniform items
       if (temperature > 60) {
         uniform.tempRange = '>60°F';
-        uniform.items.push('S/S Shirt');
+        uniform.items.push(shortSleeveShirt);
         uniform.items.push('M/E Trousers');
       } else if (temperature >= 50 && temperature <= 59) {
         uniform.tempRange = '59-50°F';
-        uniform.items.push('S/S Shirt');
+        uniform.items.push(shortSleeveShirt);
         uniform.items.push('M/E Trousers');
       } else if (temperature >= 40 && temperature <= 49) {
         uniform.tempRange = '49-40°F';
-        uniform.items.push('S/S Shirt');
+        uniform.items.push(shortSleeveShirt);
         uniform.items.push('M/E Trousers');
         uniform.items.push('Black Jacket');
         uniform.items.push('Black Dress Gloves');
@@ -233,6 +252,9 @@
       let uniformHTML = `
         <div class="uniform-section">
           <h2>Required Uniform (${uniform.tempRange})</h2>
+          <div class="weather-detail" style="margin-bottom: 10px;">
+            <strong>Time Period:</strong> ${uniform.isDST ? 'Daylight Saving Time' : 'Standard Time'}
+          </div>
       `;
 
       uniform.items.forEach(item => {
