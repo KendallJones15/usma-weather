@@ -1,34 +1,29 @@
 
-alert("script.js loaded successfully ✅");
-console.log("script.js loaded ✅");
-
+// Define the function
 async function getWeather() {
   const lat = 41.3912;
   const lon = -73.964;
 
-  // National Weather Service API
-  const pointResponse = await fetch(`https://api.weather.gov/points/${lat},${lon}`, {
-    headers: {
-      // NWS requests a descriptive User-Agent header
-      "User-Agent": "USMA Weather Demo (your-email@example.com)"
-    }
-  });
+  const pointResponse = await fetch(`https://api.weather.gov/points/${lat},${lon}`);
   const pointData = await pointResponse.json();
 
   const forecastUrl = pointData.properties.forecast;
-  const forecastResponse = await fetch(forecastUrl, {
-    headers: {
-      "User-Agent": "USMA Weather Demo (your-email@example.com)"
-    }
-  });
+  const forecastResponse = await fetch(forecastUrl);
   const forecastData = await forecastResponse.json();
 
-  // Return the first period (usually "Today" or "Tonight")
   return forecastData.properties.periods[0];
 }
 
-// Expose function globally so you can call it from DevTools
-window.getWeather = getWeather;
+// Expose the function globally (so DevTools and other scripts can call it)
+window.getWeather = getWeather; // function
 
-// Optional: auto-run once
-getWeather().then(weather => console.log("Forecast:", weather)).catch(err => console.error(err));
+// ✅ Wire up the button after the DOM is parsed (because we used 'defer')
+const btn = document.getElementById('btnGetWeather');
+btn.addEventListener('click', async () => {
+  try {
+    const w = await window.getWeather();
+    console.log(w);
+  } catch (e) {
+    console.error(e);
+  }
+});
