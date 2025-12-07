@@ -13,3 +13,9 @@ async function getWeather() {
 
   return forecastData.properties.periods[0];
 }
+
+console.log("Script loaded");
+
+async function getWeather() {
+  ...
+}
