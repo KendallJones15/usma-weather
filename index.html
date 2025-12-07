@@ -2,15 +2,288 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Weather Outfit App</title>
-  <!-- ✅ Load the script once; 'defer' ensures it runs after HTML is parsed -->
-  <script src="./script.js" defer></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>USCC AFC Weather Uniform Guide</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .container {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      max-width: 600px;
+      width: 100%;
+      padding: 30px;
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+      font-size: 28px;
+    }
+    .subtitle {
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 25px;
+    }
+    button {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      width: 100%;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #5568d3;
+    }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    .loading {
+      text-align: center;
+      color: #666;
+      margin: 20px 0;
+    }
+    .weather-info {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+    .weather-info h2 {
+      color: #333;
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+    .weather-detail {
+      margin: 8px 0;
+      color: #555;
+    }
+    .weather-detail strong {
+      color: #333;
+    }
+    .uniform-section {
+      margin-top: 20px;
+    }
+    .uniform-section h2 {
+      color: #333;
+      font-size: 20px;
+      margin-bottom: 15px;
+      border-bottom: 2px solid #667eea;
+      padding-bottom: 8px;
+    }
+    .uniform-item {
+      background: #e8f4f8;
+      padding: 12px 16px;
+      margin: 8px 0;
+      border-radius: 6px;
+      border-left: 4px solid #667eea;
+    }
+    .uniform-item.required {
+      background: #d4edda;
+      border-left-color: #28a745;
+    }
+    .uniform-item.alert {
+      background: #fff3cd;
+      border-left-color: #ffc107;
+    }
+    .error {
+      background: #f8d7da;
+      color: #721c24;
+      padding: 15px;
+      border-radius: 6px;
+      margin: 20px 0;
+      border-left: 4px solid #dc3545;
+    }
+    .note {
+      font-size: 12px;
+      color: #666;
+      margin-top: 20px;
+      padding-top: 15px;
+      border-top: 1px solid #ddd;
+    }
+  </style>
 </head>
 <body>
-  <h1>Weather Test</h1>
-  <!-- ✅ Button for clicks; avoid using id="getWeather" to prevent global name collision -->
-  <button id="btnGetWeather">Get Weather</button>
-  <!-- (Optional) Area to display the JSON result -->
-  <pre id="forecast"></pre>
+  <div class="container">
+    <h1>USCC AFC Weather Uniform</h1>
+    <p class="subtitle">Per USCC Regulation 670-1 • 4 February 2025</p>
+    
+    <button id="btnGetWeather">Get Today's Uniform Requirements</button>
+    
+    <div id="loading" class="loading" style="display: none;">
+      Loading weather data...
+    </div>
+    
+    <div id="error" class="error" style="display: none;"></div>
+    
+    <div id="weatherInfo" style="display: none;"></div>
+    
+    <div id="uniformInfo" style="display: none;"></div>
+    
+    <p class="note">
+      <strong>Note:</strong> This application uses real-time weather data from the National Weather Service for West Point, NY. 
+      Uniform requirements are based on USCC Regulation 670-1 AFC Weather Conditions Uniform Chart.
+    </p>
+  </div>
+
+  <script>
+    console.log("USCC AFC Uniform App loaded ✅");
+
+    async function getWeather() {
+      const lat = 41.3912;
+      const lon = -73.964;
+      
+      const pointResponse = await fetch(`https://api.weather.gov/points/${lat},${lon}`);
+      const pointData = await pointResponse.json();
+      
+      const forecastUrl = pointData.properties.forecast;
+      const forecastResponse = await fetch(forecastUrl);
+      const forecastData = await forecastResponse.json();
+      
+      return forecastData.properties.periods[0];
+    }
+
+    function determineUniform(temperature, shortForecast) {
+      const uniform = {
+        items: [],
+        tempRange: '',
+        hasPrecipitation: false
+      };
+
+      // Check for precipitation
+      const precipKeywords = ['rain', 'drizzle', 'shower', 'snow', 'sleet', 'precipitation'];
+      uniform.hasPrecipitation = precipKeywords.some(keyword => 
+        shortForecast.toLowerCase().includes(keyword)
+      );
+
+      // Determine temperature range and uniform items
+      if (temperature > 60) {
+        uniform.tempRange = '>60°F';
+        uniform.items.push('S/S Shirt');
+        uniform.items.push('M/E Trousers');
+      } else if (temperature >= 50 && temperature <= 59) {
+        uniform.tempRange = '59-50°F';
+        uniform.items.push('S/S Shirt');
+        uniform.items.push('M/E Trousers');
+      } else if (temperature >= 40 && temperature <= 49) {
+        uniform.tempRange = '49-40°F';
+        uniform.items.push('S/S Shirt');
+        uniform.items.push('M/E Trousers');
+        uniform.items.push('Black Jacket');
+        uniform.items.push('Black Dress Gloves');
+      } else if (temperature >= 33 && temperature <= 39) {
+        uniform.tempRange = '39-33°F';
+        uniform.items.push('L/S Shirt');
+        uniform.items.push('M/E Trousers');
+        uniform.items.push('Black Jacket');
+        uniform.items.push('Black Dress Gloves');
+      } else if (temperature <= 32) {
+        uniform.tempRange = '32°F & Below';
+        uniform.items.push('L/S Shirt');
+        uniform.items.push('M/E Trousers');
+        uniform.items.push('Parka');
+        uniform.items.push('Knit Hat');
+        uniform.items.push('Scarf');
+      }
+
+      // Add raincoat if precipitation
+      if (uniform.hasPrecipitation) {
+        uniform.items.push('Raincoat (REQUIRED - Precipitation detected)');
+      }
+
+      return uniform;
+    }
+
+    function displayResults(forecast) {
+      const weatherDiv = document.getElementById('weatherInfo');
+      const uniformDiv = document.getElementById('uniformInfo');
+      
+      // Display weather info
+      weatherDiv.innerHTML = `
+        <div class="weather-info">
+          <h2>Current Weather Conditions</h2>
+          <div class="weather-detail"><strong>Period:</strong> ${forecast.name}</div>
+          <div class="weather-detail"><strong>Temperature:</strong> ${forecast.temperature}°${forecast.temperatureUnit}</div>
+          <div class="weather-detail"><strong>Conditions:</strong> ${forecast.shortForecast}</div>
+          <div class="weather-detail"><strong>Detailed:</strong> ${forecast.detailedForecast}</div>
+        </div>
+      `;
+      weatherDiv.style.display = 'block';
+
+      // Determine and display uniform
+      const uniform = determineUniform(forecast.temperature, forecast.shortForecast);
+      
+      let uniformHTML = `
+        <div class="uniform-section">
+          <h2>Required Uniform (${uniform.tempRange})</h2>
+      `;
+
+      uniform.items.forEach(item => {
+        const isRaincoat = item.includes('Raincoat');
+        const cssClass = isRaincoat ? 'uniform-item alert' : 'uniform-item required';
+        uniformHTML += `<div class="${cssClass}">${item}</div>`;
+      });
+
+      if (uniform.hasPrecipitation) {
+        uniformHTML += `
+          <div class="uniform-item alert" style="margin-top: 15px;">
+            ⚠️ <strong>Precipitation Alert:</strong> Raincoat must be worn during any precipitation (Rain, Sleet, Snow)
+          </div>
+        `;
+      }
+
+      uniformHTML += `</div>`;
+      uniformDiv.innerHTML = uniformHTML;
+      uniformDiv.style.display = 'block';
+    }
+
+    // Button click handler
+    const btn = document.getElementById('btnGetWeather');
+    const loadingDiv = document.getElementById('loading');
+    const errorDiv = document.getElementById('error');
+
+    btn.addEventListener('click', async () => {
+      btn.disabled = true;
+      loadingDiv.style.display = 'block';
+      errorDiv.style.display = 'none';
+      document.getElementById('weatherInfo').style.display = 'none';
+      document.getElementById('uniformInfo').style.display = 'none';
+
+      try {
+        const forecast = await getWeather();
+        console.log("Forecast:", forecast);
+        displayResults(forecast);
+      } catch (e) {
+        console.error("Weather fetch failed:", e);
+        errorDiv.textContent = `Error fetching weather data: ${e.message}. Please try again.`;
+        errorDiv.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        loadingDiv.style.display = 'none';
+      }
+    });
+
+    // Auto-load on page load
+    window.addEventListener('load', () => {
+      btn.click();
+    });
+  </script>
 </body>
 </html>
