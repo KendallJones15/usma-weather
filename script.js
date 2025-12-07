@@ -1,3 +1,5 @@
+console.log("✅ script.js file loaded");
+
 console.log("Script loaded");
 
 async function getWeather() {
