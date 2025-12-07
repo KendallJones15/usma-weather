@@ -1,4 +1,4 @@
-<script src="script.js"></script>
+console.log("Script loaded");
 
 async function getWeather() {
   const lat = 41.3912;
@@ -14,8 +14,4 @@ async function getWeather() {
   return forecastData.properties.periods[0];
 }
 
-console.log("Script loaded");
-
-async function getWeather() {
-  ...
-}
+window.getWeather = getWeather; // expose for console testing
