@@ -4,11 +4,16 @@
 <head>
   <meta charset="UTF-8" />
   <title>Weather Outfit App</title>
-
-  <!-- Load the script once; 'defer' runs it after parsing -->
+  <!-- ✅ Load the script once; 'defer' ensures it runs after HTML is parsed -->
   ./script.js</script>
 </head>
 <body>
   <h1>Weather Test</h1>
+
+  <!-- ✅ Button for clicks; avoid using id="getWeather" to prevent global name collision -->
+  <button id="btnGetWeather">Get Weather</button>
+
+  <!-- (Optional) Area to display the JSON result -->
+  <pre id="forecast"></pre>
 </body>
 </html>
